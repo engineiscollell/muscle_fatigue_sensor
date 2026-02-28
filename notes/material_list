@@ -1,0 +1,15 @@
+* En tenim un (o més), ? Encara no sabem quin agafar, ! Urgent, -> Deadline
+
+-PCB Principal
+Sistema Embedded ESP32 **
+ADC7172-2 ! Possibilitat Patricia -> ?
+Material drivers? ! -> ? // Possibilitat d'agafar ja soldat en placa
+
+-PCB Òptica
+TIA? ! -> ? // Possibilitat d'agafar ja soldat en placa
+Fotodiode * ( Comanda feta Patricia)
+LED IR i R? !
+OPAMP? ! -> ? // Possibilitat d'agafar ja soldat en placa
+
+-A part
+FPC (Flexible Printed Circuit) + Connectors + Alimentació ESP32?
