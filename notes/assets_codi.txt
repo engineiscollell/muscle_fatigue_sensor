@@ -1,0 +1,24 @@
+## Configurar inicialitzacions
+
+## Implementació de tasques, distribució de cores amb tasqures 
+### Core 1: Task acquisition: Captura dades R, IR, dark. 
+    *Com relacionem això amb els 24 btis, per exemple cada R o dark té més d'una lectura de 24 bits?
+### Core 0: Task processing_ Enviament dades, gestió BLE
+
+## Cua per passar dades de tasca 1 a 0.
+
+## Mutex: Dues tasques accedeeixen a la mateixa dada: Taskacq. (2s) + Taskble (1s) -> No llegir dada que s'està escribint.
+
+## Tasques LEDs
+-Definció control DAC, tempos 1ms 19ms parat. 0.5V!
+
+## Lectura AD7172
+-Configurar lectura 24 bits, 
+    *s'ha d'establir temps entre bits?
+
+## Enviar dades BLE
+    *Funcionament és lectura 24 bits pin esp32, i llavors això ho transferim al pc per tal de intervenir en l'jnterfície
+
+## Processament de dades
+-Un cop tenim lectura 24 bits feta fer càlculs i transerir dades amb interfície.
+    *Ho fem a l'esp o al pc amb les dades ja transmeses? Enviar 24 bits amb velocitat pot ocasionar dificultats, enviair directament resultats pot ser més òptim.
