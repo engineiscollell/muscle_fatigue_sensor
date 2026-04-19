@@ -22,3 +22,42 @@
 ## Processament de dades
 -Un cop tenim lectura 24 bits feta fer càlculs i transerir dades amb interfície.
     *Ho fem a l'esp o al pc amb les dades ja transmeses? Enviar 24 bits amb velocitat pot ocasionar dificultats, enviair directament resultats pot ser més òptim.
+
+
+---
+
+## SystemInit
+Inclou: Serial Monitor, Missatges debug, CPU frequency, watcgdog, memòria, logs inicials.
+
+## hardwareinit
+Inicialització perifèrics físics del micro
+    *GPIOs no és configuren fora de 
+
+Quan ESP32 envia dades:
+
+posa CS LOW
+genera rellotge SCLK
+envia bits per MOSI
+rep resposta per MISO
+puja CS HIGH
+
+## adcInit
+-Revisar documentació ad
+-Tutoria Enric
+registres SPI: mode continu, data rate, filtre, canal AIN, referència externa/interna, bipolar/unipolar
+
+odr Output data rate: Velocitat de mostreig. +ODR més soroll...
+filtre adc té filtre intern: soroll elèctric, 50Hz, vibracions, aliasing
+referència: interna vs externa
+canal: entrada analògica de lectura
+mode lectura: continu, single conversion, standby
+
+## bleInit
+
+## procesingInit
+
+## crearRTOSObjects
+creació cues, semàfors mutex...
+
+## Createtasks
+Dos cores
