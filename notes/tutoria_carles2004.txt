@@ -1,0 +1,275 @@
+-Entendre que fa exactament la simulació donada, aquí i falta: interrupcions, cues, tasques... (Que més?)
+-Programació de l'AD per l'entrega?
+
+//DADES CUA
+struct OpticalRawFrame {
+    uint32_t timestamp_ms;
+
+    uint32_t red;
+    uint32_t darkRed;
+    uint32_t ir;
+    uint32_t darkIr;
+};
+struct ProcessedValue {
+    uint32_t timestamp_ms;
+    float redClean;
+    float irClean;
+    float metric;
+};
+
+QueueHandle_t g_frameQueue = nullptr;
+QueueHandle_t g_processedQueue = nullptr;
+
+//HANDLES TASQUES
+TaskHandle_t g_taskAcq = nullptr;
+TaskHandle_t g_taskProc = nullptr;
+TaskHandle_t g_taskBLE = nullptr;
+
+//FLAGS INTERRUPCIONS
+volatile bool dataReadyFlag = false;
+volatile bool ledIRFlag = false;
+volatile bool ledRFlag = false;
+
+//INTERRUPCIÓ DRDY
+void IRAM_ATTR isr_drdy() {
+    dataReadyFlag = true;
+}
+
+//INTERRUPCIÓ LEDs
+void IRAM_ATTR onLedIR() {
+    ledIRFlag = true;
+}
+
+void IRAM_ATTR onLedR() {
+    ledRFlag = true;
+}
+
+//ENCENDRE TIMERS
+timerLedIR = timerBegin(
+    0,
+    80,
+    true
+);
+
+timerAttachInterrupt(
+    timerLedIR,
+    &onLedIR,
+    true
+);
+
+timerAlarmWrite(
+    timerLedIR,
+    10000,
+    true
+);
+
+timerAlarmEnable(timerLedIR);
+//HE POSAT CADA 10ms (ESTÀ MALAMENT)
+
+//ENCENDRE RED
+timerLedR = timerBegin(
+    1,
+    80,
+    true
+);
+
+timerAttachInterrupt(
+    timerLedR,
+    &onLedR,
+    true
+);
+
+timerAlarmWrite(
+    timerLedR,
+    10000,
+    true
+);
+
+timerAlarmEnable(timerLedR);
+
+//---SETUP
+//INTERRUPCIÓ DRDY
+attachInterrupt(
+    digitalPinToInterrupt(DRDY),
+    isr_drdy,
+    FALLING
+);
+//CREAR CUES
+g_frameQueue =
+    xQueueCreate(
+        10,
+        sizeof(OpticalRawFrame)
+    );
+
+g_processedQueue =
+    xQueueCreate(
+        10,
+        sizeof(ProcessedValue)
+    );
+//CREAR TASQUES
+void createTasks(){
+
+    xTaskCreatePinnedToCore(
+        taskAcquisition,
+        "TaskAcquisition",
+        4096,
+        NULL,
+        3,
+        &g_taskAcq,
+        1
+    );
+
+    xTaskCreatePinnedToCore(
+        taskProcessing,
+        "TaskProcessing",
+        4096,
+        NULL,
+        2,
+        &g_taskProc,
+        0
+    );
+
+    xTaskCreatePinnedToCore(
+        taskBLE,
+        "TaskBLE",
+        4096,
+        NULL,
+        1,
+        &g_taskBLE,
+        0
+    );
+}
+//IMPLEMENTACIO TASKAQC
+void taskAcquisition(void *pv) {
+
+    OpticalRawFrame frame{};
+    uint8_t state = 0;
+
+    while (true) {
+
+        if (ledRFlag) {
+
+            ledRFlag = false;
+
+            digitalWrite(PIN_LED_RED, HIGH);
+
+            adcStartConversion(state);
+        }
+
+        if (ledIRFlag) {
+
+            ledIRFlag = false;
+
+            digitalWrite(PIN_LED_IR, HIGH);
+
+            adcStartConversion(state);
+        }
+
+        if (dataReadyFlag) {
+
+            dataReadyFlag = false;
+
+            uint32_t sample =
+                adcReadData24();
+
+            switch (state) {
+
+                case 0:
+                    frame.red = sample;
+                    break;
+
+                case 1:
+                    frame.darkRed = sample;
+                    break;
+
+                case 2:
+                    frame.ir = sample;
+                    break;
+
+                case 3:
+                    frame.darkIr = sample;
+
+                    frame.timestamp_ms =
+                        millis();
+
+                    xQueueSend(
+                        g_frameQueue,
+                        &frame,
+                        0
+                    );
+
+                    frame = {};
+                    break;
+            }
+
+            state =
+                (state + 1) % 4;
+        }
+
+        vTaskDelay(1);
+    }
+}
+//IMPLEMENTACIÓ TASKPRO
+void taskProcessing(void *pv) {
+
+    OpticalRawFrame frame{};
+    ProcessedValue value{};
+
+    while (true) {
+
+        if (xQueueReceive(
+                g_frameQueue,
+                &frame,
+                portMAX_DELAY
+            ) == pdTRUE) {
+
+            value.redClean =
+                (float)frame.red -
+                frame.darkRed;
+
+            value.irClean =
+                (float)frame.ir -
+                frame.darkIr;
+
+            if (value.irClean > 1) {
+
+                value.metric =
+                    value.redClean /
+                    value.irClean;
+            }
+
+            value.timestamp_ms =
+                frame.timestamp_ms;
+
+            xQueueSend(
+                g_processedQueue,
+                &value,
+                0
+            );
+        }
+    }
+}
+//TASKBLE
+void taskBLE(void *pv) {
+
+    ProcessedValue value{};
+
+    while (true) {
+
+        if (xQueueReceive(
+                g_processedQueue,
+                &value,
+                portMAX_DELAY
+            ) == pdTRUE) {
+
+            uint16_t smo2_x10 =
+                (uint16_t)(
+                    value.metric * 100.0f
+                );
+
+            bleNotifySmO2(
+                smo2_x10
+            );
+        }
+    }
+}
