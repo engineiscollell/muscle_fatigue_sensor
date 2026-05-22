@@ -11,4 +11,4 @@ bool bleIsConnected();
 
 // Envia SmO2 en format uint16_t (valor *10)
 // Exemple: 73.6% → 736
-void bleNotifySmO2(uint16_t smo2_x10);
+void bleNotifySmO2(uint16_t smo2_x100);

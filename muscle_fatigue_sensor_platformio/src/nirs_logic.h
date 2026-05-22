@@ -1,17 +1,44 @@
+// ============================================================================
+// nirs_logic.h
+// ============================================================================
+
 #ifndef NIRS_LOGIC_H
 #define NIRS_LOGIC_H
 
 #include <stdint.h>
 
-// Estructura de dades per a un frame complet d'adquisició
-struct OpticalRawFrame {
+// ============================================================================
+// RAW OPTICAL FRAME
+// ============================================================================
+
+struct OpticalRawFrame
+{
     uint32_t red;
+
     uint32_t darkRed;
+
     uint32_t ir;
+
     uint32_t darkIr;
 };
 
-// Funció per calcular la mètrica SmO2 a partir del frame
-float calculateNIRS(const OpticalRawFrame& frame);
+// ============================================================================
+// REFERÈNCIES ÒPTIQUES (I0)
+// ============================================================================
+
+// Es calibraran durant els primers
+// frames del sistema.
+
+extern float g_I0_red;
+
+extern float g_I0_ir;
+
+// ============================================================================
+// NIRS PROCESSING
+// ============================================================================
+
+float calculateNIRS(
+    const OpticalRawFrame& frame
+);
 
 #endif
