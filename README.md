@@ -4,7 +4,15 @@ Development of a wearable muscle fatigue sensor based on the Near-Infrared Spect
 
 The hardware side includes custom PCB design in EasyEDA, integration of optical sensing electronics, and practical work with SMD components and microscope soldering. The embedded software development includes firmware architecture, task processing, SmO₂ calculation algorithms, BLE communication, and a Python interface for data acquisition and visualization.
 
+<p align="center">
+  <img src="assets/pcb_physical.jpeg" width="20%"/>
+</p>
+
 A future goal of the project is the integration of a 3D-printed enclosure and wearable band to transform the prototype into a complete open-source wearable device. The project was mainly developed as a hands-on introduction to real-world electronics engineering, embedded systems, PCB design, firmware development, and hardware/software integration.
+
+<p align="center">
+  <img src="assets/soldering_ad7172.jpeg" width="20%"/>
+</p>
 
 ---
 
